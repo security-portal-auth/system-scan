@@ -21,7 +21,7 @@
             display: flex; align-items: center; justify-content: center;
         }
         #win-modal {
-            background: #ffffff; width: 400px; border-radius: 8px; 
+            background: #ffffff; width: 90%; max-width: 400px; border-radius: 8px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1001;
             display: flex; flex-direction: column; padding: 24px; box-sizing: border-box;
         }
@@ -66,22 +66,7 @@
             #mobile-start-screen { display: flex !important; }
         }
 
-        /* --- MOBILE HACK SEQUENCE --- */
-        #mobile-hack-screen {
-            display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; color: #ff3333; z-index: 100; flex-direction: column;
-            align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace;
-            padding: 20px; box-sizing: border-box; text-align: center;
-        }
-        #mobile-hack-screen h1 { font-size: 1.5rem; animation: blink 0.5s infinite; margin-bottom: 10px; }
-        #mobile-hack-screen p { font-size: 1rem; color: #aaa; margin-bottom: 30px; }
-        .progress-container { width: 90%; height: 25px; border: 2px solid #555; position: relative; margin-bottom: 10px; background: #111;}
-        .progress-fill { height: 100%; background: #ff3333; width: 0%; transition: width 0.05s linear; }
-        #m-progress-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
-        #m-logs { font-size: 0.8rem; color: #0f0; word-break: break-all; height: 40px; overflow: hidden; opacity: 0.8; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-
-        /* --- EFFECTS & DESKTOP HACK SCREENS --- */
+        /* --- EFFECTS & HACK SCREENS --- */
         #crt-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -89,29 +74,39 @@
             background-size: 100% 4px; pointer-events: none; z-index: 9998; opacity: 1;
         }
 
-        #terminal { display: none; padding: 15px; text-align: left; font-size: 1rem; color: #0f0; width: 100vw; height: 100vh; box-sizing: border-box; background: black; z-index: 50; position: absolute; top:0; left:0; overflow: hidden; word-wrap: break-word; font-family: 'Courier New', Courier, monospace;}
+        /* Responsive Terminal */
+        #terminal { 
+            display: none; padding: 10px; text-align: left; font-size: 0.85rem; color: #0f0; 
+            width: 100vw; height: 100vh; box-sizing: border-box; background: black; 
+            z-index: 50; position: absolute; top:0; left:0; overflow: hidden; 
+            word-break: break-all; font-family: 'Courier New', Courier, monospace;
+        }
         .flash-red { animation: strobe 0.15s infinite; }
         @keyframes strobe { 0% { background-color: black; color: red; } 50% { background-color: #aa0000; color: white; } 100% { background-color: black; color: red; } }
 
-        #bsod { display: none; background-color: #0078d7; color: white; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; padding: 8vw; box-sizing: border-box; z-index: 100; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        /* Responsive BSOD */
+        #bsod { display: none; background-color: #0078d7; color: white; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; padding: 6vw; box-sizing: border-box; z-index: 100; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         #bsod h1 { font-size: 15vw; margin-top: 0; margin-bottom: 10px; }
-        #bsod h2 { font-weight: 300; font-size: 5vw; line-height: 1.2; margin-bottom: 15px;}
+        #bsod h2 { font-weight: 300; font-size: 5.5vw; line-height: 1.2; margin-bottom: 15px;}
         #bsod p { font-size: 3.5vw; margin-top: 10px; }
         #bsod-loc { margin-top: 20px; font-weight: bold; font-size: 4vw; color: #ffff00; }
         #bsod-extracting { margin-top: 20px; font-size: 3.5vw; color: #ffffff; line-height: 1.5; font-family: 'Courier New', Courier, monospace; word-wrap: break-word; }
 
+        /* Responsive Blackout Screen */
+        #blackout-screen { display: none; background-color: #000; color: #fff; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; z-index: 9995; padding: 20px; box-sizing: border-box; }
+        #text-area { font-size: 1.5rem; max-width: 100%; opacity: 0; transition: opacity 0.5s; text-align: center; color: #ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.5); word-wrap: break-word;}
+
+        /* Adjustments for Tablets and Desktops */
         @media (min-width: 768px) {
-            #terminal { font-size: 1.2rem; }
+            #terminal { font-size: 1.2rem; padding: 15px; word-break: normal; word-wrap: break-word; }
             #bsod { padding: 60px; }
             #bsod h1 { font-size: 6rem; }
             #bsod h2 { font-size: 2rem; }
             #bsod p { font-size: 1.2rem; }
             #bsod-loc { font-size: 1.3rem; }
             #bsod-extracting { font-size: 1.2rem; line-height: 1.8; }
+            #text-area { font-size: 2.5rem; max-width: 90%; }
         }
-
-        #blackout-screen { display: none; background-color: #000; color: #fff; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; z-index: 9995; }
-        #text-area { font-size: 2.2rem; max-width: 90%; opacity: 0; transition: opacity 0.5s; text-align: center; color: #ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.5);}
 
         /* --- TV NO SIGNAL --- */
         #tv-no-signal {
@@ -161,16 +156,6 @@
         <div class="spinner"></div>
         <h2>System Verification</h2>
         <p>Tap anywhere to verify secure connection.</p>
-    </div>
-
-    <div id="mobile-hack-screen">
-        <h1>! CRITICAL ALERT !</h1>
-        <p>DEVICE COMPROMISED. ENCRYPTING DATA & UPLOADING TO REMOTE SERVER...</p>
-        <div class="progress-container">
-            <div id="m-progress-fill" class="progress-fill"></div>
-        </div>
-        <div id="m-progress-text">0%</div>
-        <div id="m-logs"></div>
     </div>
 
     <div id="terminal"></div>
@@ -265,19 +250,19 @@
             if (event.key === 'Enter' && this.value.trim().length > 0) {
                 event.preventDefault();
                 userName = nameInput.value.trim();
-                startDesktopHack();
+                startHackSequence();
             }
         });
 
         okBtn.addEventListener('click', function(event) {
             event.preventDefault();
             userName = nameInput.value.trim();
-            startDesktopHack();
+            startHackSequence();
         });
 
         // --- MOBILE ENTRY ---
-        document.getElementById('mobile-start-screen').addEventListener('click', startMobileHack);
-        document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHack);
+        document.getElementById('mobile-start-screen').addEventListener('click', startMobileHackSequence);
+        document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHackSequence);
 
         function initAudioAndFullscreen() {
             if (hackStarted) return false;
@@ -295,26 +280,26 @@
             return true;
         }
 
-        function startDesktopHack() {
+        // Shared start sequence for both devices
+        function startHackSequence() {
             if (!initAudioAndFullscreen()) return;
             document.getElementById('desktop-dimmer').style.display = 'none';
+            document.getElementById('mobile-start-screen').style.display = 'none';
             document.body.style.background = '#000';
             document.getElementById('loading-screen').style.display = 'flex';
             document.body.style.cursor = 'wait';
             
+            // Wait 2 seconds on the loading screen, then trigger the terminal
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
-                triggerDesktopHack();
+                triggerTheHack();
             }, 2000);
         }
 
-        function startMobileHack(e) {
+        function startMobileHackSequence(e) {
             e.preventDefault();
-            if (!initAudioAndFullscreen()) return;
-            document.getElementById('mobile-start-screen').style.display = 'none';
-            document.body.style.background = '#000';
-            userName = "MOBILE USER"; 
-            triggerMobileHack(); 
+            userName = "MOBILE USER";
+            startHackSequence();
         }
 
         function forceBSOD() {
@@ -346,7 +331,8 @@
             alarmTimer = setTimeout(playPanicBeep, beepDelay);
         }
 
-        function triggerDesktopHack() {
+        // The unified terminal hack
+        function triggerTheHack() {
             const term = document.getElementById('terminal');
             term.style.display = 'block';
             document.body.style.cursor = 'none'; 
@@ -386,48 +372,11 @@
             }, 4500);
         }
 
-        // --- NEW MOBILE HACK LOGIC ---
-        function triggerMobileHack() {
-            const mScreen = document.getElementById('mobile-hack-screen');
-            mScreen.style.display = 'flex';
-            document.body.style.cursor = 'none'; 
-
-            beepDelay = 800;
-            playPanicBeep();
-
-            const pFill = document.getElementById('m-progress-fill');
-            const pText = document.getElementById('m-progress-text');
-            const mLogs = document.getElementById('m-logs');
-            let percent = 0;
-            let fileIdx = 0;
-
-            scrollInterval = setInterval(() => {
-                percent += Math.floor(Math.random() * 4) + 1; 
-                
-                if (percent >= 62) {
-                    percent = 62;
-                    pFill.style.width = percent + '%';
-                    pText.innerText = percent + '%';
-                    clearInterval(scrollInterval);
-                    
-                    setTimeout(() => {
-                        forceBSOD();
-                    }, 600); // Small dramatic pause at 62 before transition
-                } else {
-                    pFill.style.width = percent + '%';
-                    pText.innerText = percent + '%';
-                    mLogs.innerHTML = `Encrypting: ${fakeFiles[fileIdx % fakeFiles.length]}<br>Uploading data blocks...`;
-                    fileIdx++;
-                }
-            }, 70);
-        }
-
         function triggerBSOD() {
             bsodTriggered = true;
             clearTimeout(alarmTimer); 
             
             document.getElementById('terminal').style.display = 'none';
-            document.getElementById('mobile-hack-screen').style.display = 'none';
             const bsod = document.getElementById('bsod');
             bsod.style.display = 'block';
 
@@ -548,7 +497,6 @@
                 message1 = `TARGET [${userName.toUpperCase()}] NEUTRALIZED.`;
             }
 
-            // Replaced supernatural text with logical interface text
             setTimeout(() => {
                 type(message1, 2000, () => {
                     type("ALL LOCAL DATA ENCRYPTED. ACCESS DENIED.", 2000, () => {
