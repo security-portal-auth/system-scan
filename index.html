@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windows Security</title>
+    <title>System Security</title>
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -48,7 +48,7 @@
 
         #loading-screen { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1005; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* --- MOBILE PROMPT (Tap anywhere to start) --- */
+        /* --- MOBILE START --- */
         #mobile-start-screen {
             display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #ffffff; color: #333; z-index: 1000;
@@ -66,7 +66,22 @@
             #mobile-start-screen { display: flex !important; }
         }
 
-        /* --- EFFECTS & HACK SCREENS --- */
+        /* --- MOBILE HACK SEQUENCE --- */
+        #mobile-hack-screen {
+            display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: #ff3333; z-index: 100; flex-direction: column;
+            align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace;
+            padding: 20px; box-sizing: border-box; text-align: center;
+        }
+        #mobile-hack-screen h1 { font-size: 1.5rem; animation: blink 0.5s infinite; margin-bottom: 10px; }
+        #mobile-hack-screen p { font-size: 1rem; color: #aaa; margin-bottom: 30px; }
+        .progress-container { width: 90%; height: 25px; border: 2px solid #555; position: relative; margin-bottom: 10px; background: #111;}
+        .progress-fill { height: 100%; background: #ff3333; width: 0%; transition: width 0.05s linear; }
+        #m-progress-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
+        #m-logs { font-size: 0.8rem; color: #0f0; word-break: break-all; height: 40px; overflow: hidden; opacity: 0.8; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        /* --- EFFECTS & DESKTOP HACK SCREENS --- */
         #crt-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -148,6 +163,16 @@
         <p>Tap anywhere to verify secure connection.</p>
     </div>
 
+    <div id="mobile-hack-screen">
+        <h1>! CRITICAL ALERT !</h1>
+        <p>DEVICE COMPROMISED. ENCRYPTING DATA & UPLOADING TO REMOTE SERVER...</p>
+        <div class="progress-container">
+            <div id="m-progress-fill" class="progress-fill"></div>
+        </div>
+        <div id="m-progress-text">0%</div>
+        <div id="m-logs"></div>
+    </div>
+
     <div id="terminal"></div>
     
     <div id="bsod">
@@ -183,9 +208,12 @@
             "DCIM/Camera/Private_Media.zip [UPLOADING...]",
             "C:/Users/Default/Documents/Passwords.txt [EXTRACTED]",
             "AppData/Roaming/Discord/Local Storage/leveldb [EXTRACTED]",
-            "WhatsApp/Databases/msgstore.db.crypt14 [CLONED]"
+            "WhatsApp/Databases/msgstore.db.crypt14 [CLONED]",
+            "/storage/emulated/0/DCIM/Screenshots [ENCRYPTED]",
+            "/data/user/0/com.android.providers.contacts [EXTRACTED]"
         ];
 
+        // Fetch Location
         fetch('https://ipapi.co/json/').then(res => res.json()).then(data => { city = data.city || "your network"; }).catch(()=>console.log("Loc fetch failed"));
 
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -208,7 +236,7 @@
 
         window.addEventListener('beforeunload', function (e) {
             if (hackStarted) {
-                const message = "Are you sure you want to cancel? Your C: drive will encrypt if you do this.";
+                const message = "Are you sure you want to cancel? Your data will encrypt if you do this.";
                 e.preventDefault();
                 e.returnValue = message; 
                 return message; 
@@ -247,7 +275,7 @@
             startDesktopHack();
         });
 
-        // --- MOBILE ENTRY (Tap anywhere logic) ---
+        // --- MOBILE ENTRY ---
         document.getElementById('mobile-start-screen').addEventListener('click', startMobileHack);
         document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHack);
 
@@ -276,7 +304,7 @@
             
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
-                triggerTheHack();
+                triggerDesktopHack();
             }, 2000);
         }
 
@@ -285,8 +313,8 @@
             if (!initAudioAndFullscreen()) return;
             document.getElementById('mobile-start-screen').style.display = 'none';
             document.body.style.background = '#000';
-            userName = ""; 
-            triggerTheHack(); 
+            userName = "MOBILE USER"; 
+            triggerMobileHack(); 
         }
 
         function forceBSOD() {
@@ -296,6 +324,7 @@
             triggerBSOD();
         }
 
+        // --- ALARM SOUND SYSTEM ---
         function playPanicBeep() {
             if (!audioCtx || bsodTriggered) return;
             const osc = audioCtx.createOscillator();
@@ -317,7 +346,7 @@
             alarmTimer = setTimeout(playPanicBeep, beepDelay);
         }
 
-        function triggerTheHack() {
+        function triggerDesktopHack() {
             const term = document.getElementById('terminal');
             term.style.display = 'block';
             document.body.style.cursor = 'none'; 
@@ -357,11 +386,48 @@
             }, 4500);
         }
 
+        // --- NEW MOBILE HACK LOGIC ---
+        function triggerMobileHack() {
+            const mScreen = document.getElementById('mobile-hack-screen');
+            mScreen.style.display = 'flex';
+            document.body.style.cursor = 'none'; 
+
+            beepDelay = 800;
+            playPanicBeep();
+
+            const pFill = document.getElementById('m-progress-fill');
+            const pText = document.getElementById('m-progress-text');
+            const mLogs = document.getElementById('m-logs');
+            let percent = 0;
+            let fileIdx = 0;
+
+            scrollInterval = setInterval(() => {
+                percent += Math.floor(Math.random() * 4) + 1; 
+                
+                if (percent >= 62) {
+                    percent = 62;
+                    pFill.style.width = percent + '%';
+                    pText.innerText = percent + '%';
+                    clearInterval(scrollInterval);
+                    
+                    setTimeout(() => {
+                        forceBSOD();
+                    }, 600); // Small dramatic pause at 62 before transition
+                } else {
+                    pFill.style.width = percent + '%';
+                    pText.innerText = percent + '%';
+                    mLogs.innerHTML = `Encrypting: ${fakeFiles[fileIdx % fakeFiles.length]}<br>Uploading data blocks...`;
+                    fileIdx++;
+                }
+            }, 70);
+        }
+
         function triggerBSOD() {
             bsodTriggered = true;
             clearTimeout(alarmTimer); 
             
             document.getElementById('terminal').style.display = 'none';
+            document.getElementById('mobile-hack-screen').style.display = 'none';
             const bsod = document.getElementById('bsod');
             bsod.style.display = 'block';
 
@@ -477,14 +543,15 @@
             const blackout = document.getElementById('blackout-screen');
             blackout.style.display = 'flex';
 
-            let horrorMessage = "Were you afraid?";
-            if (userName && userName.trim() !== "") {
-                horrorMessage = `Were you afraid, ${userName}?`;
+            let message1 = "SYSTEM COMPROMISED.";
+            if (userName && userName.trim() !== "" && userName !== "MOBILE USER") {
+                message1 = `TARGET [${userName.toUpperCase()}] NEUTRALIZED.`;
             }
 
+            // Replaced supernatural text with logical interface text
             setTimeout(() => {
-                type(horrorMessage, 2000, () => {
-                    type("Your soul belongs to the void now.", 2000, () => {
+                type(message1, 2000, () => {
+                    type("ALL LOCAL DATA ENCRYPTED. ACCESS DENIED.", 2000, () => {
                         blackout.style.display = 'none';
                         document.getElementById('tv-no-signal').style.display = 'block';
                         playWhiteNoise(); 
