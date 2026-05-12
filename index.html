@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows Security</title>
+    <style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #c3d2e5; 
+            font-family: 'Segoe UI Variable', 'Segoe UI', Tahoma, sans-serif; 
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        /* --- DESKTOP PROMPT (Windows Security) --- */
+        #desktop-dimmer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); 
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #win-modal {
+            background: #ffffff; width: 400px; border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1001;
+            display: flex; flex-direction: column; padding: 24px; box-sizing: border-box;
+        }
+        .win-title { font-size: 1.1rem; color: #000; margin-bottom: 20px; font-weight: 600; text-align: left; }
+        .profile-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; }
+        .profile-icon {
+            width: 64px; height: 64px; background: #e1e1e1; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+        }
+        .profile-icon svg { width: 32px; height: 32px; fill: #666; }
+        .win-desc { font-size: 0.95rem; color: #000; text-align: center; margin-bottom: 15px; }
+        .win-input-container { position: relative; width: 100%; margin-bottom: 5px; }
+        .win-input {
+            width: 100%; padding: 10px 12px; border: 1px solid #d1d1d1; border-radius: 4px; border-bottom: 2px solid #005fb8;
+            font-family: 'Segoe UI', sans-serif; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: border-color 0.2s;
+        }
+        .win-input:focus { border-bottom: 2px solid #005fb8; background-color: #f3f3f3; }
+        .hint-text { font-size: 0.8rem; color: #666; text-align: left; margin-bottom: 25px; display: block;}
+        .win-footer { display: flex; justify-content: flex-end; width: 100%; gap: 10px; }
+        .win-btn-cancel { background: #fbfbfb; color: #000; border: 1px solid #d1d1d1; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; font-family: 'Segoe UI', sans-serif; cursor: pointer; }
+        .win-btn-disabled { background: #cccccc; color: #888; border: none; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; cursor: not-allowed; font-family: 'Segoe UI', sans-serif; }
+        .win-btn-active { background: #0067c0; color: #ffffff; border: none; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-family: 'Segoe UI', sans-serif; transition: background 0.2s; }
+        .win-btn-active:hover { background: #005fb8; }
+
+        #loading-screen { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1005; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* --- MOBILE PROMPT --- */
+        #mobile-start-screen {
+            display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #ffffff; color: #333; z-index: 1000;
+            flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', sans-serif; cursor: pointer; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        #mobile-start-screen h2 { margin: 0 0 10px 0; font-size: 1.5rem; }
+        #mobile-start-screen p { color: #666; font-size: 1rem; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #0078D7; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            body { background: #000; }
+            #desktop-dimmer { display: none !important; }
+            #mobile-start-screen { display: flex !important; }
+        }
+
+        /* --- EFFECTS & HACK SCREENS --- */
+        #crt-overlay {
+            display: none; 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 9998; opacity: 1;
+        }
+
+        #terminal { display: none; padding: 15px; text-align: left; font-size: 1rem; color: #0f0; width: 100vw; height: 100vh; box-sizing: border-box; background: black; z-index: 50; position: absolute; top:0; left:0; overflow: hidden; word-wrap: break-word; font-family: 'Courier New', Courier, monospace;}
+        .flash-red { animation: strobe 0.15s infinite; }
+        @keyframes strobe { 0% { background-color: black; color: red; } 50% { background-color: #aa0000; color: white; } 100% { background-color: black; color: red; } }
+
+        #bsod { display: none; background-color: #0078d7; color: white; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; padding: 8vw; box-sizing: border-box; z-index: 100; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        #bsod h1 { font-size: 15vw; margin-top: 0; margin-bottom: 10px; }
+        #bsod h2 { font-weight: 300; font-size: 5vw; line-height: 1.2; margin-bottom: 15px;}
+        #bsod p { font-size: 3.5vw; margin-top: 10px; }
+        #bsod-loc { margin-top: 20px; font-weight: bold; font-size: 4vw; color: #ffff00; }
+        #bsod-extracting { margin-top: 20px; font-size: 3.5vw; color: #ffffff; line-height: 1.5; font-family: 'Courier New', Courier, monospace; word-wrap: break-word; }
+
+        @media (min-width: 768px) {
+            #terminal { font-size: 1.2rem; }
+            #bsod { padding: 60px; }
+            #bsod h1 { font-size: 6rem; }
+            #bsod h2 { font-size: 2rem; }
+            #bsod p { font-size: 1.2rem; }
+            #bsod-loc { font-size: 1.3rem; }
+            #bsod-extracting { font-size: 1.2rem; line-height: 1.8; }
+        }
+
+        #blackout-screen { display: none; background-color: #000; color: #fff; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; z-index: 9995; }
+        #text-area { font-size: 2.2rem; max-width: 90%; opacity: 0; transition: opacity 0.5s; text-align: center; color: #ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.5);}
+
+        /* --- TV NO SIGNAL --- */
+        #tv-no-signal {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;
+            background: linear-gradient(to right, #EBEBEB 14.28%, #EBEB16 14.28% 28.56%, #16EBEB 28.56% 42.84%, #16EB16 42.84% 57.12%, #EB16EB 57.12% 71.4%, #EB1616 71.4% 85.68%, #1616EB 85.68%);
+            animation: tvGlitch 0.3s infinite;
+        }
+        #tv-no-signal::before { content: ''; position: absolute; top: 67%; left: 0; width: 100%; height: 8%; background: linear-gradient(to right, #1616EB 14.28%, #121212 14.28% 28.56%, #EB16EB 28.56% 42.84%, #121212 42.84% 57.12%, #16EBEB 57.12% 71.4%, #121212 71.4% 85.68%, #EBEBEB 85.68%); }
+        #tv-no-signal::after { content: ''; position: absolute; top: 75%; left: 0; width: 100%; height: 25%; background: linear-gradient(to right, #002B59 16.66%, #FFFFFF 16.66% 33.33%, #400073 33.33% 50%, #121212 50% 66.66%, #000000 66.66% 83.33%, #121212 83.33%); }
+        .tv-static-noise { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 2px, transparent 2px, transparent 4px); z-index: 10000; pointer-events: none; opacity: 0.7; animation: scrollStatic 0.3s linear infinite; }
+        @keyframes scrollStatic { from { background-position: 0 0; } to { background-position: 0 100%; } }
+        @keyframes tvGlitch { 0% { transform: translate(0, 0); } 20% { transform: translate(-3px, 1px); filter: contrast(120%); } 40% { transform: translate(3px, -1px); } 60% { transform: translate(-1px, 3px); filter: hue-rotate(10deg); } 80% { transform: translate(1px, -3px); } 100% { transform: translate(0, 0); } }
+    </style>
+</head>
+<body>
+
+    <div id="crt-overlay"></div>
+
+    <div id="desktop-dimmer">
+        <div id="win-modal">
+            <div class="win-title">Windows Security</div>
+            <div class="profile-section">
+                <div class="profile-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <div class="win-desc">Please verify your local profile to continue.</div>
+            </div>
+            
+            <div class="win-input-container">
+                <input type="text" id="user-name" class="win-input" placeholder="Profile Name" autocomplete="off" autofocus>
+            </div>
+            <div class="hint-text">Enter name and click OK.</div>
+            
+            <div class="win-footer">
+                <button class="win-btn-cancel" onclick="location.reload()">Cancel</button>
+                <button id="ok-btn" class="win-btn-disabled" disabled>OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <div style="color: #333; font-size: 1.1rem; font-family: 'Segoe UI', sans-serif;">Verifying...</div>
+    </div>
+
+    <div id="mobile-start-screen">
+        <div class="spinner"></div>
+        <h2>System Verification</h2>
+        <p>Tap anywhere to verify secure connection.</p>
+    </div>
+
+    <div id="terminal"></div>
+    
+    <div id="bsod">
+        <h1>:(</h1>
+        <h2>Your device ran into a problem and needs to restart.</h2>
+        <p>We're just collecting some error info, and then we'll restart for you.</p>
+        <p style="color: #b3d9ff;">Stop code: CRITICAL_PROCESS_DIED</p>
+        <p id="bsod-loc"></p>
+        <div id="bsod-extracting"></div>
+    </div>
+
+    <div id="blackout-screen">
+        <div id="text-area"></div>
+    </div>
+
+    <div id="tv-no-signal">
+        <div class="tv-static-noise"></div>
+    </div>
+
+    <script>
+        let city = "Unknown";
+        let userName = ""; 
+        let audioCtx, oscillator, gainNode, extractInterval, scrollInterval;
+        let alarmTimer;
+        let beepDelay = 800;
+        let hackStarted = false;
+        let bsodTriggered = false;
+
+        const fakeFiles = [
+            "/system/etc/security/cacerts [BYPASSED]",
+            "C:/Windows/System32/config/SAM [EXTRACTED]",
+            "/data/data/com.android.chrome/app_tabs [CLONED]",
+            "DCIM/Camera/Private_Media.zip [UPLOADING...]",
+            "C:/Users/Default/Documents/Passwords.txt [EXTRACTED]",
+            "AppData/Roaming/Discord/Local Storage/leveldb [EXTRACTED]",
+            "WhatsApp/Databases/msgstore.db.crypt14 [CLONED]"
+        ];
+
+        // Fetch Location
+        fetch('https://ipapi.co/json/').then(res => res.json()).then(data => { city = data.city || "your network"; }).catch(()=>console.log("Loc fetch failed"));
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // --- TRAPS ---
+        window.history.pushState(null, "", window.location.href);
+        window.onpopstate = function() {
+            window.history.pushState(null, "", window.location.href);
+            if (hackStarted && !bsodTriggered) forceBSOD();
+        };
+
+        document.addEventListener('keydown', function(event) {
+            if (!hackStarted) return;
+            const k = event.key;
+            if (k === 'Escape' || event.keyCode === 27 || k === 'F11' || k === 'F12' || k.includes('Volume') || k === 'AudioVolumeMute' || k === 'AudioVolumeDown' || k === 'AudioVolumeUp') {
+                event.preventDefault();
+                if (!bsodTriggered && (k === 'Escape' || k === 'F11' || k === 'F12')) forceBSOD();
+            }
+        });
+
+        // The specific trap for closing the tab/window
+        window.addEventListener('beforeunload', function (e) {
+            if (hackStarted) {
+                const message = "Are you sure you want to cancel? Your C: drive will encrypt if you do this.";
+                e.preventDefault();
+                e.returnValue = message; // Used for older browsers
+                return message; // Used for older browsers
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (hackStarted && !document.fullscreenElement && !bsodTriggered) forceBSOD();
+        });
+
+        // --- DESKTOP ENTRY ---
+        const nameInput = document.getElementById('user-name');
+        const okBtn = document.getElementById('ok-btn');
+
+        nameInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                okBtn.disabled = false;
+                okBtn.className = 'win-btn-active';
+            } else {
+                okBtn.disabled = true;
+                okBtn.className = 'win-btn-disabled';
+            }
+        });
+
+        nameInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && this.value.trim().length > 0) {
+                event.preventDefault();
+                userName = nameInput.value.trim();
+                startDesktopHack();
+            }
+        });
+
+        okBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            userName = nameInput.value.trim();
+            startDesktopHack();
+        });
+
+        // --- MOBILE ENTRY ---
+        document.getElementById('mobile-start-screen').addEventListener('click', startMobileHack);
+        document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHack);
+
+        function initAudioAndFullscreen() {
+            if (hackStarted) return false;
+            hackStarted = true;
+            
+            document.getElementById('crt-overlay').style.display = 'block'; 
+
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            }
+            return true;
+        }
+
+        function startDesktopHack() {
+            if (!initAudioAndFullscreen()) return;
+            document.getElementById('desktop-dimmer').style.display = 'none';
+            document.body.style.background = '#000';
+            document.getElementById('loading-screen').style.display = 'flex';
+            document.body.style.cursor = 'wait';
+            
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                triggerTheHack();
+            }, 2000);
+        }
+
+        function startMobileHack(e) {
+            e.preventDefault();
+            if (!initAudioAndFullscreen()) return;
+            document.getElementById('mobile-start-screen').style.display = 'none';
+            document.body.style.background = '#000';
+            userName = ""; 
+            triggerTheHack(); 
+        }
+
+        function forceBSOD() {
+            bsodTriggered = true;
+            clearInterval(scrollInterval);
+            document.getElementById('terminal').classList.remove('flash-red');
+            triggerBSOD();
+        }
+
+        // --- ALARM SOUND SYSTEM ---
+        function playPanicBeep() {
+            if (!audioCtx || bsodTriggered) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(950, audioCtx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.1); 
+
+            gain.gain.setValueAtTime(1.0, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15); 
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+
+            // Make the beep faster every loop to raise anxiety
+            beepDelay = Math.max(70, beepDelay * 0.85); 
+            alarmTimer = setTimeout(playPanicBeep, beepDelay);
+        }
+
+        function triggerTheHack() {
+            const term = document.getElementById('terminal');
+            term.style.display = 'block';
+            document.body.style.cursor = 'none'; 
+
+            // Start the escalating beep
+            beepDelay = 800;
+            playPanicBeep();
+
+            term.innerHTML = "<b>> OVERRIDING SECURITY PROTOCOLS... SUCCESS</b><br>";
+            
+            let displayTarget = userName ? userName.toUpperCase() : "UNKNOWN DEVICE";
+            term.innerHTML += `<b>> TARGET LOCKED: ${displayTarget}</b><br>`;
+            term.innerHTML += `<b>> ANALYZING SYSTEM: ${navigator.userAgent.substring(0, 40)}...</b><br>`;
+            
+            if(navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    term.innerHTML += `<b>> POWER SOURCE INTERCEPTED: ${Math.round(battery.level * 100)}% REMAINING</b><br><br>`;
+                });
+            } else {
+                term.innerHTML += "<b>> INITIATING MASS EXFILTRATION...</b><br><br>";
+            }
+            
+            let fileIndex = 0;
+            scrollInterval = setInterval(() => {
+                let hex = Math.floor(Math.random()*16777215).toString(16).toUpperCase();
+                let file = fakeFiles[fileIndex % fakeFiles.length];
+                term.innerHTML += `[0x${hex}] EXPORTING: ${file}<br>`;
+                fileIndex++;
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 60); 
+
+            setTimeout(() => { 
+                if(!bsodTriggered) term.classList.add('flash-red'); 
+            }, 2500);
+
+            setTimeout(() => {
+                if(!bsodTriggered) forceBSOD();
+            }, 4500);
+        }
+
+        function triggerBSOD() {
+            bsodTriggered = true;
+            clearTimeout(alarmTimer); // Kill the ticking beep
+            
+            document.getElementById('terminal').style.display = 'none';
+            const bsod = document.getElementById('bsod');
+            bsod.style.display = 'block';
+
+            document.getElementById('bsod-loc').innerText = `> SECURE CONNECTION ESTABLISHED. ROUTING ${city.toUpperCase()} NODE...`;
+
+            // Start a continuous, piercing "flatline" alarm
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+            gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime); // LOUD
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+
+            const extractDiv = document.getElementById('bsod-extracting');
+            let sysPercent = 0, chromePercent = 0, docsPercent = 0, tokenPercent = 0, camPercent = 0;
+
+            extractInterval = setInterval(() => {
+                sysPercent += Math.floor(Math.random() * 20) + 10;
+                if (sysPercent > 100) sysPercent = 100;
+                
+                if (sysPercent > 40) chromePercent += Math.floor(Math.random() * 20) + 10;
+                if (chromePercent > 100) chromePercent = 100;
+                
+                if (chromePercent > 30) docsPercent += Math.floor(Math.random() * 20) + 5;
+                if (docsPercent > 100) docsPercent = 100;
+                
+                if (docsPercent > 40) tokenPercent += Math.floor(Math.random() * 15) + 5;
+                if (tokenPercent > 100) tokenPercent = 100;
+
+                if (tokenPercent > 20) camPercent += Math.floor(Math.random() * 15) + 5;
+                if (camPercent > 100) camPercent = 100;
+
+                let html = `<b>> DUMPING CORE SYSTEM FILES... [${sysPercent}%]</b><br>`;
+                if (sysPercent > 40) html += `<b>> EXFILTRATING CACHE & PASSWORDS... [${chromePercent}%]</b><br>`;
+                if (chromePercent > 30) html += `<b>> COMPRESSING MEDIA VAULT... [${docsPercent}%]</b><br>`;
+                if (docsPercent > 40) html += `<b>> EXTRACTING SESSION TOKENS... [${tokenPercent}%]</b><br>`;
+                if (tokenPercent > 20) html += `<b>> HIJACKING CAMERA DRIVERS... [${camPercent}%]</b><br>`;
+                
+                if (sysPercent === 100 && chromePercent === 100 && docsPercent === 100 && tokenPercent === 100 && camPercent === 100) {
+                    html += `<br><b style="color: #ffaaaa;">> PAYLOAD DELIVERED. SIGNAL LOST.</b>`;
+                }
+                extractDiv.innerHTML = html;
+            }, 80);
+
+            setTimeout(endNightmare, 3000); 
+        }
+
+        function playWhiteNoise() {
+            if (!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 2; 
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = buffer;
+            noiseSource.loop = true;
+            
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(1.0, audioCtx.currentTime); 
+            
+            noiseSource.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseSource.start();
+        }
+
+        function playTypeSound() {
+            if (!audioCtx) return;
+            const clickOsc = audioCtx.createOscillator();
+            const clickGain = audioCtx.createGain();
+            clickOsc.type = 'square';
+            clickOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            clickOsc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.03);
+            clickGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            clickGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+            clickOsc.connect(clickGain);
+            clickGain.connect(audioCtx.destination);
+            clickOsc.start();
+            clickOsc.stop(audioCtx.currentTime + 0.03);
+        }
+
+        function type(text, delayNext, callback) {
+            const el = document.getElementById('text-area');
+            el.innerHTML = "";
+            el.style.opacity = 1;
+            let i = 0;
+            function typeChar() {
+                if (i < text.length) {
+                    el.innerHTML += text.charAt(i);
+                    playTypeSound(); 
+                    i++;
+                    setTimeout(typeChar, 60);
+                } else {
+                    setTimeout(() => {
+                        el.style.opacity = 0; 
+                        if(callback) setTimeout(callback, 800);
+                    }, delayNext);
+                }
+            }
+            typeChar();
+        }
+
+        function endNightmare() {
+            clearInterval(extractInterval); 
+            
+            // Kill the loud flatline tone
+            if (gainNode) gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            if (oscillator) setTimeout(() => oscillator.stop(), 100);
+
+            document.getElementById('bsod').style.display = 'none';
+            
+            const blackout = document.getElementById('blackout-screen');
+            blackout.style.display = 'flex';
+
+            let horrorMessage = "Were you afraid?";
+            if (userName && userName.trim() !== "") {
+                horrorMessage = `Were you afraid, ${userName}?`;
+            }
+
+            setTimeout(() => {
+                type(horrorMessage, 2000, () => {
+                    type("Your soul belongs to the void now.", 2000, () => {
+                        blackout.style.display = 'none';
+                        document.getElementById('tv-no-signal').style.display = 'block';
+                        playWhiteNoise(); // Blasts loud static
+                    });
+                });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
