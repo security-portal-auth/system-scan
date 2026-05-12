@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>System Security</title>
     <style>
@@ -13,7 +17,7 @@
             touch-action: none; 
         }
 
-        /* --- DESKTOP PROMPT (Windows Security) --- */
+        /* --- DESKTOP PROMPT --- */
         #desktop-dimmer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4); 
@@ -44,7 +48,6 @@
         .win-btn-cancel { background: #fbfbfb; color: #000; border: 1px solid #d1d1d1; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; font-family: 'Segoe UI', sans-serif; cursor: pointer; }
         .win-btn-disabled { background: #cccccc; color: #888; border: none; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; cursor: not-allowed; font-family: 'Segoe UI', sans-serif; }
         .win-btn-active { background: #0067c0; color: #ffffff; border: none; padding: 6px 24px; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-family: 'Segoe UI', sans-serif; transition: background 0.2s; }
-        .win-btn-active:hover { background: #005fb8; }
 
         #loading-screen { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1005; flex-direction: column; align-items: center; justify-content: center; }
         
@@ -63,7 +66,8 @@
         @media (max-width: 768px) {
             body { background: #000; }
             #desktop-dimmer { display: none !important; }
-            #mobile-start-screen { display: flex !important; }
+            /* FIXED: Removed !important so javascript can successfully hide this screen! */
+            #mobile-start-screen { display: flex; } 
         }
 
         /* --- EFFECTS & HACK SCREENS --- */
@@ -74,7 +78,6 @@
             background-size: 100% 4px; pointer-events: none; z-index: 9998; opacity: 1;
         }
 
-        /* Responsive Terminal */
         #terminal { 
             display: none; padding: 10px; text-align: left; font-size: 0.85rem; color: #0f0; 
             width: 100vw; height: 100vh; box-sizing: border-box; background: black; 
@@ -84,7 +87,6 @@
         .flash-red { animation: strobe 0.15s infinite; }
         @keyframes strobe { 0% { background-color: black; color: red; } 50% { background-color: #aa0000; color: white; } 100% { background-color: black; color: red; } }
 
-        /* Responsive BSOD */
         #bsod { display: none; background-color: #0078d7; color: white; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; padding: 6vw; box-sizing: border-box; z-index: 100; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         #bsod h1 { font-size: 15vw; margin-top: 0; margin-bottom: 10px; }
         #bsod h2 { font-weight: 300; font-size: 5.5vw; line-height: 1.2; margin-bottom: 15px;}
@@ -92,11 +94,9 @@
         #bsod-loc { margin-top: 20px; font-weight: bold; font-size: 4vw; color: #ffff00; }
         #bsod-extracting { margin-top: 20px; font-size: 3.5vw; color: #ffffff; line-height: 1.5; font-family: 'Courier New', Courier, monospace; word-wrap: break-word; }
 
-        /* Responsive Blackout Screen */
         #blackout-screen { display: none; background-color: #000; color: #fff; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; z-index: 9995; padding: 20px; box-sizing: border-box; }
         #text-area { font-size: 1.5rem; max-width: 100%; opacity: 0; transition: opacity 0.5s; text-align: center; color: #ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.5); word-wrap: break-word;}
 
-        /* Adjustments for Tablets and Desktops */
         @media (min-width: 768px) {
             #terminal { font-size: 1.2rem; padding: 15px; word-break: normal; word-wrap: break-word; }
             #bsod { padding: 60px; }
@@ -108,12 +108,7 @@
             #text-area { font-size: 2.5rem; max-width: 90%; }
         }
 
-        /* --- TV NO SIGNAL --- */
-        #tv-no-signal {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;
-            background: linear-gradient(to right, #EBEBEB 14.28%, #EBEB16 14.28% 28.56%, #16EBEB 28.56% 42.84%, #16EB16 42.84% 57.12%, #EB16EB 57.12% 71.4%, #EB1616 71.4% 85.68%, #1616EB 85.68%);
-            animation: tvGlitch 0.3s infinite;
-        }
+        #tv-no-signal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; background: linear-gradient(to right, #EBEBEB 14.28%, #EBEB16 14.28% 28.56%, #16EBEB 28.56% 42.84%, #16EB16 42.84% 57.12%, #EB16EB 57.12% 71.4%, #EB1616 71.4% 85.68%, #1616EB 85.68%); animation: tvGlitch 0.3s infinite; }
         #tv-no-signal::before { content: ''; position: absolute; top: 67%; left: 0; width: 100%; height: 8%; background: linear-gradient(to right, #1616EB 14.28%, #121212 14.28% 28.56%, #EB16EB 28.56% 42.84%, #121212 42.84% 57.12%, #16EBEB 57.12% 71.4%, #121212 71.4% 85.68%, #EBEBEB 85.68%); }
         #tv-no-signal::after { content: ''; position: absolute; top: 75%; left: 0; width: 100%; height: 25%; background: linear-gradient(to right, #002B59 16.66%, #FFFFFF 16.66% 33.33%, #400073 33.33% 50%, #121212 50% 66.66%, #000000 66.66% 83.33%, #121212 83.33%); }
         .tv-static-noise { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 2px, transparent 2px, transparent 4px); z-index: 10000; pointer-events: none; opacity: 0.7; animation: scrollStatic 0.3s linear infinite; }
@@ -154,7 +149,7 @@
 
     <div id="mobile-start-screen">
         <div class="spinner"></div>
-        <h2>System Verification</h2>
+        <h2>System Verification 2.1</h2>
         <p>Tap anywhere to verify secure connection.</p>
     </div>
 
@@ -198,12 +193,10 @@
             "/data/user/0/com.android.providers.contacts [EXTRACTED]"
         ];
 
-        // Fetch Location
         fetch('https://ipapi.co/json/').then(res => res.json()).then(data => { city = data.city || "your network"; }).catch(()=>console.log("Loc fetch failed"));
 
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // --- TRAPS ---
         window.history.pushState(null, "", window.location.href);
         window.onpopstate = function() {
             window.history.pushState(null, "", window.location.href);
@@ -232,7 +225,6 @@
             if (hackStarted && !document.fullscreenElement && !bsodTriggered) forceBSOD();
         });
 
-        // --- DESKTOP ENTRY ---
         const nameInput = document.getElementById('user-name');
         const okBtn = document.getElementById('ok-btn');
 
@@ -260,7 +252,6 @@
             startHackSequence();
         });
 
-        // --- MOBILE ENTRY ---
         document.getElementById('mobile-start-screen').addEventListener('click', startMobileHackSequence);
         document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHackSequence);
 
@@ -280,7 +271,6 @@
             return true;
         }
 
-        // Shared start sequence for both devices
         function startHackSequence() {
             if (!initAudioAndFullscreen()) return;
             document.getElementById('desktop-dimmer').style.display = 'none';
@@ -289,7 +279,6 @@
             document.getElementById('loading-screen').style.display = 'flex';
             document.body.style.cursor = 'wait';
             
-            // Wait 2 seconds on the loading screen, then trigger the terminal
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
                 triggerTheHack();
@@ -299,7 +288,7 @@
         function startMobileHackSequence(e) {
             e.preventDefault();
             userName = "MOBILE USER";
-            startHackSequence();
+            startHackSequence(); 
         }
 
         function forceBSOD() {
@@ -309,29 +298,23 @@
             triggerBSOD();
         }
 
-        // --- ALARM SOUND SYSTEM ---
         function playPanicBeep() {
             if (!audioCtx || bsodTriggered) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'square'; 
             osc.frequency.setValueAtTime(950, audioCtx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.1); 
-
             gain.gain.setValueAtTime(1.0, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15); 
-
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.15);
-
             beepDelay = Math.max(70, beepDelay * 0.85); 
             alarmTimer = setTimeout(playPanicBeep, beepDelay);
         }
 
-        // The unified terminal hack
         function triggerTheHack() {
             const term = document.getElementById('terminal');
             term.style.display = 'block';
@@ -382,14 +365,16 @@
 
             document.getElementById('bsod-loc').innerText = `> SECURE CONNECTION ESTABLISHED. ROUTING ${city.toUpperCase()} NODE...`;
 
-            oscillator = audioCtx.createOscillator();
-            gainNode = audioCtx.createGain();
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
-            gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime); 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
+            if (audioCtx) {
+                oscillator = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime); 
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+            }
 
             const extractDiv = document.getElementById('bsod-extracting');
             let sysPercent = 0, chromePercent = 0, docsPercent = 0, tokenPercent = 0, camPercent = 0;
@@ -483,8 +468,7 @@
 
         function endNightmare() {
             clearInterval(extractInterval); 
-            
-            if (gainNode) gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            if (gainNode && audioCtx) gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
             if (oscillator) setTimeout(() => oscillator.stop(), 100);
 
             document.getElementById('bsod').style.display = 'none';
