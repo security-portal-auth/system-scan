@@ -13,7 +13,7 @@
             touch-action: none; 
         }
 
-        /* --- DESKTOP PROMPT (Windows Security) - UNCHANGED --- */
+        /* --- DESKTOP PROMPT (Windows Security) --- */
         #desktop-dimmer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4); 
@@ -47,32 +47,21 @@
         .win-btn-active:hover { background: #005fb8; }
 
         #loading-screen { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1005; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #0078D7; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* --- MOBILE ERROR PROMPT --- */
+        /* --- MOBILE PROMPT (Tap anywhere to start) --- */
         #mobile-start-screen {
             display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.75); z-index: 1000;
+            background: #ffffff; color: #333; z-index: 1000;
             flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', sans-serif; cursor: pointer; text-align: center; padding: 20px; box-sizing: border-box;
         }
-        #mobile-error-modal {
-            background: #ffffff; width: 85%; max-width: 350px; border-radius: 6px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column;
-            overflow: hidden; font-family: 'Segoe UI', sans-serif;
-        }
-        .mob-err-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center;}
-        .mob-err-icon { 
-            background: #e81123; color: white; width: 24px; height: 24px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 14px;
-        }
-        .mob-err-title { font-weight: 600; color: #333; font-size: 1.1rem; }
-        .mob-err-body { padding: 20px; color: #444; font-size: 0.95rem; line-height: 1.4; }
-        .mob-err-footer { padding: 12px 20px; background: #f3f3f3; display: flex; justify-content: flex-end; }
-        .mob-err-btn { background: #0067c0; color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+        #mobile-start-screen h2 { margin: 0 0 10px 0; font-size: 1.5rem; }
+        #mobile-start-screen p { color: #666; font-size: 1rem; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #0078D7; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
-            body { background: #111; }
+            body { background: #000; }
             #desktop-dimmer { display: none !important; }
             #mobile-start-screen { display: flex !important; }
         }
@@ -154,19 +143,9 @@
     </div>
 
     <div id="mobile-start-screen">
-        <div id="mobile-error-modal">
-            <div class="mob-err-header">
-                <div class="mob-err-icon">!</div>
-                <div class="mob-err-title">System Error</div>
-            </div>
-            <div class="mob-err-body">
-                A critical background process has failed or been corrupted.<br><br>
-                Please run a diagnostic scan to prevent data loss.
-            </div>
-            <div class="mob-err-footer">
-                <button id="mobile-scan-btn" class="mob-err-btn">Scan Now</button>
-            </div>
-        </div>
+        <div class="spinner"></div>
+        <h2>System Verification</h2>
+        <p>Tap anywhere to verify secure connection.</p>
     </div>
 
     <div id="terminal"></div>
@@ -268,9 +247,9 @@
             startDesktopHack();
         });
 
-        // --- MOBILE ENTRY ---
-        document.getElementById('mobile-scan-btn').addEventListener('click', startMobileHack);
-        document.getElementById('mobile-scan-btn').addEventListener('touchstart', startMobileHack);
+        // --- MOBILE ENTRY (Tap anywhere logic) ---
+        document.getElementById('mobile-start-screen').addEventListener('click', startMobileHack);
+        document.getElementById('mobile-start-screen').addEventListener('touchstart', startMobileHack);
 
         function initAudioAndFullscreen() {
             if (hackStarted) return false;
